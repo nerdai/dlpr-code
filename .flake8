@@ -1,0 +1,4 @@
+[flake8]
+extend-ignore = E203
+max-line-length = 79
+extend-exclude = *_pb2.py,*_pb2.pyi,*_pb2_grpc.py, .venv
