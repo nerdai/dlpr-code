@@ -8,6 +8,7 @@ packages = [{include = "dlpr_code"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
+torch = "^2.0.1"
 
 [tool.poetry.group.dev.dependencies]
 isort = "^5.12.0"
@@ -37,7 +38,7 @@ ignore-patterns = ".*_pb2, .*_pb2_grpc"
 disable = "logging-fstring-interpolation"
 generated-members="torch.*, numpy.*, websockets.*,"
 extension-pkg-allow-list = ["pydantic"]
-max-line-length=120
+max-line-length=79
 
 [tool.pylint.BASIC]
 good-names = ["i", "j", "k", "e", "db", "ex", "Run", "_"]
