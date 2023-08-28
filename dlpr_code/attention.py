@@ -42,7 +42,3 @@ class Attention(nn.Module):
             values = keys_and_values.values
         out = self._scaled_prod_attention(queries, keys, values)
         return out
-
-
-def test_attention():
-    assert True
