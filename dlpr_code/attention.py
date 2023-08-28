@@ -60,18 +60,20 @@ class Attention(nn.Module):
         eps = 1e-5
         denom = torch.sqrt(self.qk_dim + eps)
         return torch.bmm(
-            F.softmax(torch.bmm(queries, keys.transpose(1, 2)) / denom), values
+            F.softmax(torch.bmm(queries, keys.transpose(1, 2)) / denom, dim=1),
+            values,
         )
 
     def forward(
-        self, emb: Tensor, keys: Optional[Tensor], values: Optional[Tensor]
+        self, seq: Tensor, keys: Optional[Tensor], values: Optional[Tensor]
     ) -> Tensor:
         """Forward pass for Attention block. Uses scaled-dot product attention.
 
         Parameters
         ----------
-        emb : Tensor
-            Embeddings (model_dim) or hidden state input to the Attention block.
+        seq : Tensor
+            Sequence of embeddings (model_dim) or hidden state input to
+            the Attention block.
         keys : Optional[Tensor]
             Optional keys vector. If not passed, then computes self-attention.
         values : Optional[Tensor]
@@ -82,11 +84,11 @@ class Attention(nn.Module):
         Tensor
             Returns the provided embeddings after performing Attention.
         """
-        queries = self.query_projection(emb)
+        queries = self.query_projection(seq)
         if keys is None:
-            keys = self.key_projection(emb)
+            keys = self.key_projection(seq)
         if values is None:
-            values = self.value_projection(emb)
+            values = self.value_projection(seq)
         out = self.__scaled_prod_attention(
             queries=queries, keys=keys, values=values
         )
