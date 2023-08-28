@@ -1,5 +1,6 @@
-from dlpr_code.attention import Attention
 from unittest import TestCase
+
+from dlpr_code.attention import Attention
 
 
 class AttentionTest(TestCase):
