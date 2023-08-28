@@ -1,15 +1,29 @@
-from collections import namedtuple
 from typing import Optional
 
 import torch
+from torch import Tensor
 import torch.nn as nn
 import torch.nn.functional as F
 
-KeysAndValues = namedtuple("KeysAndValues", ["keys", "values"])
-
 
 class Attention(nn.Module):
-    """A simple Attention module."""
+    """A simple Attention module.
+
+    Attributes 
+    ----------
+    model_dim : int
+        Dimension of the model.
+    qk_dim : int
+        Dimension of embeddings for queries and keys.
+    v_dim : Optional[int]
+        Dimension of embeddings for values.
+    query_projection : torch.Tensor
+        Linear projection for queries. 
+    key_projection : torch.Tensor
+        Linear projection for keys. 
+    value_projection : torch.Tensor
+        Linear projection for values. 
+    """
 
     def __init__(self, model_dim: int, qk_dim: int, v_dim: Optional[int]):
         super().__init__()
@@ -23,22 +37,53 @@ class Attention(nn.Module):
         else:
             self.value_projection = nn.Linear(model_dim, v_dim)
 
-    def _scaled_prod_attention(self, queries, keys, values):
+    def __scaled_prod_attention(self, *, queries: Tensor, keys: Tensor, values: Tensor) -> Tensor:
+        """Helper function used in forward pass. One of the ways to compute
+        attention, namely via scaled dot product.
+
+        Parameters
+        ----------
+        queries : torch.Tensor
+            A tensor containining query representations. 
+        keys : torch.Tensor
+            A tensor containining keys representations.
+        values : torch.Tensor
+            A tensor containining values representations.
+
+        Returns
+        -------
+        _type_
+            _description_
+        """
         eps = 1e-5
         denom = torch.sqrt(self.qk_dim + eps)
         return torch.bmm(
             F.softmax(torch.bmm(queries, keys.transpose(1, 2)) / denom), values
         )
 
-    def forward(self, emb, keys_and_values=Optional[KeysAndValues]):
+    def forward(self, emb: Tensor, keys: Optional[Tensor], values: Optional[Tensor]) -> Tensor:
+        """Forward pass for Attention block. Uses scaled-dot product attention.
+
+        Parameters
+        ----------
+        emb : Tensor
+            Embeddings (model_dim) or hidden state input to the Attention block. 
+        keys : Optional[Tensor]
+            Optional keys vector. If not passed, then computes self-attention.
+        values : Optional[Tensor]
+            Optional keys vector. If not passed, then computes self-attention.
+
+        Returns
+        -------
+        Tensor
+            Returns the provided embeddings after performing Attention. 
+        """
         queries = self.query_projection(emb)
-        keys = None
-        values = None
-        if keys_and_values is None:
+        if keys is None:
             keys = self.key_projection(emb)
+        if values is None:
             values = self.value_projection(emb)
-        else:
-            keys = keys_and_values.keys
-            values = keys_and_values.values
-        out = self._scaled_prod_attention(queries, keys, values)
+        out = self.__scaled_prod_attention(
+            queries=queries, keys=keys, values=values
+        )
         return out
