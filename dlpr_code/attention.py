@@ -1,15 +1,15 @@
 from typing import Optional
 
 import torch
-from torch import Tensor
 import torch.nn as nn
 import torch.nn.functional as F
+from torch import Tensor
 
 
 class Attention(nn.Module):
     """A simple Attention module.
 
-    Attributes 
+    Attributes
     ----------
     model_dim : int
         Dimension of the model.
@@ -18,11 +18,11 @@ class Attention(nn.Module):
     v_dim : Optional[int]
         Dimension of embeddings for values.
     query_projection : torch.Tensor
-        Linear projection for queries. 
+        Linear projection for queries.
     key_projection : torch.Tensor
-        Linear projection for keys. 
+        Linear projection for keys.
     value_projection : torch.Tensor
-        Linear projection for values. 
+        Linear projection for values.
     """
 
     def __init__(self, model_dim: int, qk_dim: int, v_dim: Optional[int]):
@@ -37,14 +37,16 @@ class Attention(nn.Module):
         else:
             self.value_projection = nn.Linear(model_dim, v_dim)
 
-    def __scaled_prod_attention(self, *, queries: Tensor, keys: Tensor, values: Tensor) -> Tensor:
+    def __scaled_prod_attention(
+        self, *, queries: Tensor, keys: Tensor, values: Tensor
+    ) -> Tensor:
         """Helper function used in forward pass. One of the ways to compute
         attention, namely via scaled dot product.
 
         Parameters
         ----------
         queries : torch.Tensor
-            A tensor containining query representations. 
+            A tensor containining query representations.
         keys : torch.Tensor
             A tensor containining keys representations.
         values : torch.Tensor
@@ -61,13 +63,15 @@ class Attention(nn.Module):
             F.softmax(torch.bmm(queries, keys.transpose(1, 2)) / denom), values
         )
 
-    def forward(self, emb: Tensor, keys: Optional[Tensor], values: Optional[Tensor]) -> Tensor:
+    def forward(
+        self, emb: Tensor, keys: Optional[Tensor], values: Optional[Tensor]
+    ) -> Tensor:
         """Forward pass for Attention block. Uses scaled-dot product attention.
 
         Parameters
         ----------
         emb : Tensor
-            Embeddings (model_dim) or hidden state input to the Attention block. 
+            Embeddings (model_dim) or hidden state input to the Attention block.
         keys : Optional[Tensor]
             Optional keys vector. If not passed, then computes self-attention.
         values : Optional[Tensor]
@@ -76,7 +80,7 @@ class Attention(nn.Module):
         Returns
         -------
         Tensor
-            Returns the provided embeddings after performing Attention. 
+            Returns the provided embeddings after performing Attention.
         """
         queries = self.query_projection(emb)
         if keys is None:
