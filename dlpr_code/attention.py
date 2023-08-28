@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch import Tensor
+from dlpr_code.constants import SMOOTHING_TERM
 
 
 class Attention(nn.Module):
@@ -58,8 +59,7 @@ class Attention(nn.Module):
         _type_
             _description_
         """
-        eps = 1e-5
-        denom = torch.sqrt(self.qk_dim + eps)
+        denom = torch.sqrt(self.qk_dim + SMOOTHING_TERM)
         return torch.mm(
             F.softmax(
                 torch.mm(queries, keys.transpose(1, 2)) / denom,
