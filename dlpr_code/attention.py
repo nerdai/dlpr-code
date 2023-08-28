@@ -7,7 +7,8 @@ from torch import Tensor
 
 
 class Attention(nn.Module):
-    """A simple Attention module.
+    """A simple Attention module. This class only takes one input sequence at
+    at time.
 
     Attributes
     ----------
@@ -59,8 +60,11 @@ class Attention(nn.Module):
         """
         eps = 1e-5
         denom = torch.sqrt(self.qk_dim + eps)
-        return torch.bmm(
-            F.softmax(torch.bmm(queries, keys.transpose(1, 2)) / denom, dim=1),
+        return torch.mm(
+            F.softmax(
+                torch.mm(queries, keys.transpose(1, 2)) / denom,
+                dim=-1 # along the last dimension post 
+            ),
             values,
         )
 
