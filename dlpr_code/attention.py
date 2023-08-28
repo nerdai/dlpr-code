@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch import Tensor
+
 from dlpr_code.constants import SMOOTHING_TERM
 
 
@@ -63,7 +64,7 @@ class Attention(nn.Module):
         return torch.mm(
             F.softmax(
                 torch.mm(queries, keys.transpose(1, 2)) / denom,
-                dim=-1 # along the last dimension post 
+                dim=-1,  # along the last dimension post
             ),
             values,
         )
