@@ -66,7 +66,7 @@ class SpatialBatchNormalization(nn.Module):
 
     def __init__(self, num_channels: int):
         super().__init__()
-        self.num_channels = num_channels 
+        self.num_channels = num_channels
 
     def forward(self, x_batch: Tensor) -> Tensor:
         """Forward pass for TemporalBatchNormalization.
@@ -85,9 +85,12 @@ class SpatialBatchNormalization(nn.Module):
         """
 
         # estimate the means and std_dev for each channel
+        z_batch = torch.empty(x_batch.shape)
         for c in self.num_channels:
-            mu_x = torch.mean(x_batch, dim=0)  # mean over batch
-            sigma_x = torch.std(x_batch, dim=0, correction=0)  # biased std dev
-            z_batch = (x_batch - mu_x) / (sigma_x + SMOOTHING_TERM)
+            mu_x = torch.mean(x_batch[:, c], dim=0)  # mean over batch
+            sigma_x = torch.std(
+                x_batch[:, c], dim=0, correction=0
+            )  # biased std dev
+            z_batch[:, c] = (x_batch[:, c] - mu_x) / (sigma_x + SMOOTHING_TERM)
 
         return z_batch
