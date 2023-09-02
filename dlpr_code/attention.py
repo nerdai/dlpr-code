@@ -1,9 +1,10 @@
+"""Attention Module"""
+
 from typing import Optional
 
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
-from torch import Tensor
+from torch import Tensor, nn
 
 from dlpr_code.constants import SMOOTHING_TERM
 

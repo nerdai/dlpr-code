@@ -1,6 +1,7 @@
+"""Batch Normalization Module"""
+
 import torch
-import torch.nn as nn
-from torch import Tensor
+from torch import Tensor, nn
 
 from dlpr_code.constants import SMOOTHING_TERM
 
@@ -20,11 +21,12 @@ class TemporalBatchNormalization(nn.Module):
         Learned shift parameter, applied to all positions.
     """
 
-    def __init__(self, input_dim: int):
+    def __init__(self, input_dim: int, learnable: bool = False):
         super().__init__()
         self.input_dim = input_dim
         self.scale = nn.Linear(input_dim, 1)
         self.shift = nn.Linear(input_dim, 1)
+        self.learnable = learnable
 
     def forward(self, x_batch: Tensor) -> Tensor:
         """Forward pass for TemporalBatchNormalization.
@@ -45,13 +47,14 @@ class TemporalBatchNormalization(nn.Module):
         # estimate the means and std_dev
         mu_x = torch.mean(x_batch, dim=0)  # mean over batch
         sigma_x = torch.std(x_batch, dim=0, correction=0)  # biased std dev
-        z_batch = (x_batch - mu_x) / (sigma_x + SMOOTHING_TERM)
+        out = (x_batch - mu_x) / (sigma_x + SMOOTHING_TERM)  # z
 
         # apply shift and scale using learned (affine) parameters
-        scale = self.scale(x_batch)
-        shift = self.shift(x_batch)
-        tilde_z_batch = scale * z_batch + shift
-        return tilde_z_batch
+        if self.learnable:
+            scale = self.scale(x_batch)
+            shift = self.shift(x_batch)
+            out = scale * out + shift  # tilde z
+        return out
 
 
 class SpatialBatchNormalization(nn.Module):
@@ -86,11 +89,32 @@ class SpatialBatchNormalization(nn.Module):
 
         # estimate the means and std_dev for each channel
         z_batch = torch.empty(x_batch.shape)
-        for c in self.num_channels:
-            mu_x = torch.mean(x_batch[:, c], dim=0)  # mean over batch
+        for channel in self.num_channels:
+            mu_x = torch.mean(x_batch[:, channel], dim=0)  # mean over batch
             sigma_x = torch.std(
-                x_batch[:, c], dim=0, correction=0
+                x_batch[:, channel], dim=0, correction=0
             )  # biased std dev
-            z_batch[:, c] = (x_batch[:, c] - mu_x) / (sigma_x + SMOOTHING_TERM)
+            z_batch[:, channel] = (x_batch[:, channel] - mu_x) / (
+                sigma_x + SMOOTHING_TERM
+            )
 
         return z_batch
+
+
+def examples():
+    """Example usage of BatchNormalization classes."""
+    model_dim = 10
+    batch_size = 5
+    temporal_bn = TemporalBatchNormalization(input_dim=model_dim)
+    sample_batch = torch.rand(batch_size, model_dim)
+    with torch.no_grad():
+        batch_mean = torch.mean(sample_batch, dim=0)
+        batch_std = torch.std(sample_batch, dim=0, correction=0)
+        results = temporal_bn(sample_batch)
+    print(f"raw_sample: {sample_batch}")
+    print(f"batch_mean: {batch_mean},\nbatch_std: {batch_std}")
+    print(f"results: {results}")
+
+
+if __name__ == "__main__":
+    examples()
