@@ -130,7 +130,7 @@ def spatial_bn_example():
     width = 4
     channels = 3
     spatial_bn = SpatialBatchNormalization(num_channels=channels)
-    sample_batch = torch.rand(batch_size, channels, height, width) # images
+    sample_batch = torch.rand(batch_size, channels, height, width)  # images
     with torch.no_grad():
         c1_batch_mean = torch.mean(sample_batch[:, 1], dim=0)
         c1_batch_std = torch.std(sample_batch[:, 1], dim=0, correction=0)
@@ -139,6 +139,7 @@ def spatial_bn_example():
     print(f"batch_mean (channel 1): {c1_batch_mean}")
     print(f"batch_std (channel 1): {c1_batch_std}")
     print(f"results (channel 1): {results[:, 1]}")
+
 
 if __name__ == "__main__":
     print("TEMPORAL BATCH NORMALIZATION EXAMPLE")
