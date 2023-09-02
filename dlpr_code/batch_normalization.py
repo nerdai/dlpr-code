@@ -72,24 +72,29 @@ class SpatialBatchNormalization(nn.Module):
         self.num_channels = num_channels
 
     def forward(self, x_batch: Tensor) -> Tensor:
-        """Forward pass for TemporalBatchNormalization.
+        """Forward pass for SpatialBatchNormalization.
 
         Parameters
         ----------
         x_batch : Tensor
             Input tensor. Should represent the outputs of an affine
-            transformation, just before passing to activations operation.
-            Dimension [B x input_dim], where B is batch size.
+            transformation (Conv2D), just before passing to activations
+            operation. Dimension [B x C x H x W], where:
+                - B is batch size.
+                - C is channel
+                - H is height
+                - W is width
 
         Returns
         -------
         Tensor
-            Normalized inputs ready for activation operation.
+            Normalized inputs ready for activation operation. (Same dimension
+            as x_batch)
         """
 
         # estimate the means and std_dev for each channel
         z_batch = torch.empty(x_batch.shape)
-        for channel in self.num_channels:
+        for channel in range(self.num_channels):
             mu_x = torch.mean(x_batch[:, channel], dim=0)  # mean over batch
             sigma_x = torch.std(
                 x_batch[:, channel], dim=0, correction=0
@@ -101,8 +106,9 @@ class SpatialBatchNormalization(nn.Module):
         return z_batch
 
 
-def examples():
-    """Example usage of BatchNormalization classes."""
+def temporal_bn_example():
+    """Example usage of TemporalBatchNormalization."""
+
     model_dim = 10
     batch_size = 5
     temporal_bn = TemporalBatchNormalization(input_dim=model_dim)
@@ -116,5 +122,27 @@ def examples():
     print(f"results: {results}")
 
 
+def spatial_bn_example():
+    """Example usage of SpatialBatchNormalization."""
+
+    batch_size = 5
+    height = 4
+    width = 4
+    channels = 3
+    spatial_bn = SpatialBatchNormalization(num_channels=channels)
+    sample_batch = torch.rand(batch_size, channels, height, width) # images
+    with torch.no_grad():
+        c1_batch_mean = torch.mean(sample_batch[:, 1], dim=0)
+        c1_batch_std = torch.std(sample_batch[:, 1], dim=0, correction=0)
+        results = spatial_bn(sample_batch)
+    print(f"raw_sample (channel 1): {sample_batch[:, 1]}")
+    print(f"batch_mean (channel 1): {c1_batch_mean}")
+    print(f"batch_std (channel 1): {c1_batch_std}")
+    print(f"results (channel 1): {results[:, 1]}")
+
 if __name__ == "__main__":
-    examples()
+    print("TEMPORAL BATCH NORMALIZATION EXAMPLE")
+    temporal_bn_example()
+    print("")
+    print("SPATIAL BATCH NORMALIZATION EXAMPLE")
+    spatial_bn_example()
