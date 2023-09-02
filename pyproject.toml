@@ -8,7 +8,7 @@ packages = [{include = "dlpr_code"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
-torch = "^2.0.1"
+torch = ">=2.0.0 !=2.0.1"
 numpy = "^1.25.2"
 
 [tool.poetry.group.dev.dependencies]
